@@ -1,0 +1,11 @@
+[package]
+name = "aoc2021"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "aoc2021"
+path = "src/lib.rs"
+
+[dependencies]
+assert_matches = "1.5.0"
