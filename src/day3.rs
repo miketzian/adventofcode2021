@@ -103,7 +103,7 @@ pub fn calc_generators(input: Vec<Vec<u8>>) -> (u128, u128, u128) {
 
         o2 = o2
             .iter()
-            .map(|v| *v)
+            .cloned()
             .filter(|row| {
                 let want = if v0[i] > v1[i] { 0 } else { 1 };
                 if row[i] != want {
@@ -126,7 +126,7 @@ pub fn calc_generators(input: Vec<Vec<u8>>) -> (u128, u128, u128) {
 
         co2 = co2
             .iter()
-            .map(|v| *v)
+            .cloned()
             .filter(|row| {
                 let want = if v0[i] > v1[i] { 1 } else { 0 };
                 // println!("want: {} in ix {}", want, i);

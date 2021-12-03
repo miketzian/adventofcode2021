@@ -224,15 +224,17 @@ mod tests {
         // what's up with this copied business ?
         let mut triple = TripleIter::new(records.iter().copied());
 
-        assert_matches!(triple.next(), Some(value) => {
-            assert_eq!(6, value);
-        });
+        match triple.next() {
+            Some(value) => assert_eq!(6, value),
+            _ => unreachable!(),
+        }
 
-        assert_matches!(triple.next(), Some(value) => {
-            assert_eq!(9, value);
-        });
+        match triple.next() {
+            Some(value) => assert_eq!(9, value),
+            _ => unreachable!(),
+        }
 
-        assert_matches!(triple.next(), None);
+        assert!(triple.next().is_none());
     }
 
     #[test]
