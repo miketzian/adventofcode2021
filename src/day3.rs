@@ -8,7 +8,7 @@ fn reset_counts(input: Vec<&Vec<u8>>, v0: &mut Vec<u32>, v1: &mut Vec<u32>) {
             match v {
                 0 => v0[i] += 1,
                 1 => v1[i] += 1,
-                _ => panic!("unreachable"),
+                _ => unreachable!(),
             }
         }
     });
@@ -17,8 +17,6 @@ fn reset_counts(input: Vec<&Vec<u8>>, v0: &mut Vec<u32>, v1: &mut Vec<u32>) {
 pub fn calculate_power(input: Vec<Vec<u8>>) -> (u128, u128, u128) {
     let mut gamma: String = String::new();
     let mut epsilon: String = String::new();
-    //let mut c0: i32;
-    //let mut c1: i32;
 
     let size: usize = input[0].len();
 
@@ -30,7 +28,7 @@ pub fn calculate_power(input: Vec<Vec<u8>>) -> (u128, u128, u128) {
             match v {
                 0 => v0[i] += 1,
                 1 => v1[i] += 1,
-                _ => panic!("unreachable"),
+                _ => unreachable!(),
             }
         }
     }
@@ -51,7 +49,7 @@ pub fn calculate_power(input: Vec<Vec<u8>>) -> (u128, u128, u128) {
     (gv, ev, power)
 }
 
-fn vec_to_string(input: &Vec<u8>) -> String {
+fn vec_to_string(input: &[u8]) -> String {
     let mut output: String = String::new();
     for v in input.iter() {
         match v {
@@ -69,75 +67,56 @@ pub fn calc_generators(input: Vec<Vec<u8>>) -> (u128, u128, u128) {
     let mut v0: Vec<u32> = vec![0; size];
     let mut v1: Vec<u32> = vec![0; size];
 
+    // need a vector of references
     reset_counts(input.iter().collect(), &mut v0, &mut v1);
 
-    let mut o2: Box<Vec<&Vec<u8>>> = Box::new(
-        input
-            .iter()
-            .filter(|row| {
-                let want = if v0[0] > v1[0] { 0 } else { 1 };
-                if row[0] != want {
-                    return false;
-                }
-                true
-            })
-            .collect(),
-    );
+    let mut o2: Vec<&Vec<u8>> = input
+        .iter()
+        .filter(|row| {
+            let want = if v0[0] > v1[0] { 0 } else { 1 };
+            if row[0] != want {
+                return false;
+            }
+            true
+        })
+        .collect();
 
-    let mut co2: Box<Vec<&Vec<u8>>> = Box::new(
-        input
-            .iter()
-            .filter(|row| {
-                let want = if v0[0] > v1[0] { 1 } else { 0 };
-                if row[0] != want {
-                    return false;
-                }
-                true
-            })
-            .collect(),
-    );
-
-    // for v in oxy.iter() {
-    //     println!("0: {}", vec_to_string(v));
-    // }
+    let mut co2: Vec<&Vec<u8>> = input
+        .iter()
+        .filter(|row| {
+            let want = if v0[0] > v1[0] { 1 } else { 0 };
+            if row[0] != want {
+                return false;
+            }
+            true
+        })
+        .collect();
 
     for i in 1..size {
         // loop only until there is one left
+
         if o2.len() == 1 {
             break;
         }
 
         reset_counts(o2.to_vec(), &mut v0, &mut v1);
 
-        o2 = Box::new(
-            o2.iter()
-                .map(|v| *v)
-                .filter(|row| {
-                    let want = if v0[i] > v1[i] { 0 } else { 1 };
-                    // println!("want: {} in ix {}", want, i);
-                    if row[i] != want {
-                        return false;
-                    }
-                    true
-                })
-                .collect(),
-        );
-
-        // println!("{}: ", i);
-        // for v in oxy.iter() {
-        //     println!("{}: {}", i, vec_to_string(v));
-        // }
+        o2 = o2
+            .iter()
+            .map(|v| *v)
+            .filter(|row| {
+                let want = if v0[i] > v1[i] { 0 } else { 1 };
+                if row[i] != want {
+                    return false;
+                }
+                true
+            })
+            .collect();
     }
-    assert_eq!(o2.len(), 1);
-    // println!("OXY: {}", vec_to_string(oxy[0]));
 
-    // for v in c02.iter() {
-    //     println!("0: {}", vec_to_string(v));
-    // }
+    assert_eq!(o2.len(), 1);
 
     for i in 1..size {
-        // loop only until there is one left
-        // because of this we need the box, can we avoid it ?
         if co2.len() == 1 {
             break;
         }
@@ -145,27 +124,20 @@ pub fn calc_generators(input: Vec<Vec<u8>>) -> (u128, u128, u128) {
         // recalculate the index
         reset_counts(co2.to_vec(), &mut v0, &mut v1);
 
-        co2 = Box::new(
-            co2.iter()
-                .map(|v| *v)
-                .filter(|row| {
-                    let want = if v0[i] > v1[i] { 1 } else { 0 };
-                    // println!("want: {} in ix {}", want, i);
-                    if row[i] != want {
-                        return false;
-                    }
-                    true
-                })
-                .collect(),
-        );
-
-        // println!("{}: ", i);
-        // for v in c02.iter() {
-        //     println!("{}: {}", i, vec_to_string(v));
-        // }
+        co2 = co2
+            .iter()
+            .map(|v| *v)
+            .filter(|row| {
+                let want = if v0[i] > v1[i] { 1 } else { 0 };
+                // println!("want: {} in ix {}", want, i);
+                if row[i] != want {
+                    return false;
+                }
+                true
+            })
+            .collect();
     }
     assert_eq!(co2.len(), 1);
-    // println!("CO2: {}", vec_to_string(c02[0]));
 
     let ov = u128::from_str_radix(&vec_to_string(o2[0]), 2).unwrap();
     let cv = u128::from_str_radix(&vec_to_string(co2[0]), 2).unwrap();
