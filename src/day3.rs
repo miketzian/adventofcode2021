@@ -181,4 +181,16 @@ mod tests {
         let (oxy, co2, rating) = calc_generators(puzzle_input().collect());
         println!("o2={}, c02={}, power={}", oxy, co2, rating);
     }
+
+    #[test]
+    #[should_panic]
+    fn test_reset_counts() {
+        let mut v0: Vec<u32> = vec![0; 2];
+        let mut v1: Vec<u32> = vec![0; 2];
+
+        let row = &vec![1, 2]; // 2 is invalid
+        let data = vec![row];
+
+        reset_counts(data, &mut v0, &mut v1);
+    }
 }

@@ -4,7 +4,11 @@ use std::io;
 use std::io::prelude::*;
 use std::path;
 
-fn read_file(file_path: String) -> io::BufReader<fs::File> {
+/// ```should_panic
+/// use aoc2021::util;
+/// let _ = util::read_file("/not/exist.txt".to_string());
+///```
+pub fn read_file(file_path: String) -> io::BufReader<fs::File> {
     let path = path::Path::new(&file_path);
 
     let file = match fs::File::open(path) {
@@ -16,18 +20,12 @@ fn read_file(file_path: String) -> io::BufReader<fs::File> {
     io::BufReader::new(file)
 }
 
+pub fn read_strings_from_file(file_path: String) -> impl Iterator<Item = String> {
+    read_file(file_path).lines().filter_map(Result::ok)
+}
+
 pub fn read_ints_from_file(file_path: String) -> impl Iterator<Item = i32> {
-    let path = path::Path::new(&file_path);
-
-    let file = match fs::File::open(path) {
-        // The `description` method of `io::Error` returns a string that describes the error
-        Err(why) => panic!("couldn't open {}: {}", file_path, why),
-        Ok(file) => file,
-    };
-
-    let reader = io::BufReader::new(file);
-
-    reader
+    read_file(file_path)
         .lines()
         .filter_map(Result::ok)
         .map(|v| v.parse::<i32>())
@@ -35,23 +33,16 @@ pub fn read_ints_from_file(file_path: String) -> impl Iterator<Item = i32> {
 }
 
 pub fn read_string_int_from_file(file_path: String) -> impl Iterator<Item = (String, i32)> {
-    let path = path::Path::new(&file_path);
-
-    let file = match fs::File::open(path) {
-        // The `description` method of `io::Error` returns a string that describes the error
-        Err(why) => panic!("couldn't open {}: {}", file_path, why),
-        Ok(file) => file,
-    };
-
-    let reader = io::BufReader::new(file);
-
-    reader.lines().filter_map(Result::ok).map(|v| {
-        let mut i = v.split(' ');
-        (
-            i.next().unwrap().to_string(),
-            i.next().unwrap().parse::<i32>().unwrap(),
-        )
-    })
+    read_file(file_path)
+        .lines()
+        .filter_map(Result::ok)
+        .map(|v| {
+            let mut i = v.split(' ');
+            (
+                i.next().unwrap().to_string(),
+                i.next().unwrap().parse::<i32>().unwrap(),
+            )
+        })
 }
 
 pub fn read_int_list_from_file(file_path: String) -> impl Iterator<Item = Vec<u8>> {
