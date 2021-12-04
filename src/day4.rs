@@ -147,7 +147,8 @@ impl BingoCardBuilder {
             into.push(BingoCard::new(card_data));
         } else {
             // otherwise, we should have no lines
-            assert_eq!(0, self.accum.len());
+            // assert_eq!(0, self.accum.len());
+            unreachable!();
         }
     }
 }
@@ -169,9 +170,6 @@ pub fn read_blocks_from_file(file_path: &str) -> CalculationInput {
     } else {
         unreachable!();
     };
-
-    // skip the new line
-    iter.next();
 
     // this function needs to own the cards, can't be given from builder?
     let mut cards = Vec::new();

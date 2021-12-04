@@ -11,13 +11,12 @@ use std::path;
 pub fn read_file(file_path: String) -> io::BufReader<fs::File> {
     let path = path::Path::new(&file_path);
 
-    let file = match fs::File::open(path) {
-        // The `description` method of `io::Error` returns a string that describes the error
-        Err(why) => panic!("couldn't open {}: {}", file_path, why),
-        Ok(file) => file,
-    };
-
-    io::BufReader::new(file)
+    if let Ok(file) = fs::File::open(path) {
+        io::BufReader::new(file)
+    } else {
+        // at least, within this repo
+        unreachable!();
+    }
 }
 
 pub fn read_strings_from_file(file_path: String) -> impl Iterator<Item = String> {
@@ -54,11 +53,7 @@ pub fn read_int_list_from_file(file_path: String) -> impl Iterator<Item = Vec<u8
         .filter_map(Result::ok)
         .map(|s| {
             s.chars()
-                .map(|c| match c {
-                    '0' => 0,
-                    '1' => 1,
-                    _ => panic!("unexpected input"),
-                })
+                .map(|c| c.to_string().parse::<u8>().unwrap())
                 .collect()
         })
 }
