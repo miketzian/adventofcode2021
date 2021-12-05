@@ -37,11 +37,11 @@ mod tests {
     // }
 
     fn test_data() -> impl Iterator<Item = i32> {
-        super::super::util::read_ints_from_file("data/day1_test.txt".to_string())
+        super::super::util::read_ints_from_file("data/day1_test.txt")
     }
 
     fn puzzle_input() -> impl Iterator<Item = i32> {
-        super::super::util::read_ints_from_file("data/day1.txt".to_string())
+        super::super::util::read_ints_from_file("data/day1.txt")
     }
 
     #[test]

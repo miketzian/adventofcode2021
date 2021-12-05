@@ -154,7 +154,7 @@ impl BingoCardBuilder {
 }
 
 pub fn read_blocks_from_file(file_path: &str) -> CalculationInput {
-    let mut iter = super::util::read_strings_from_file(file_path.to_string());
+    let mut iter = super::util::read_strings_from_file(file_path);
 
     // the first line will be the inputs
     let draw: Vec<u8> = if let Some(first) = iter.next() {

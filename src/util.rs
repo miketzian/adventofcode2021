@@ -6,10 +6,10 @@ use std::path;
 
 /// ```should_panic
 /// use aoc2021::util;
-/// let _ = util::read_file("/not/exist.txt".to_string());
+/// let _ = util::read_file("/not/exist.txt");
 ///```
-pub fn read_file(file_path: String) -> io::BufReader<fs::File> {
-    let path = path::Path::new(&file_path);
+pub fn read_file(file_path: &str) -> io::BufReader<fs::File> {
+    let path = path::Path::new(file_path);
 
     if let Ok(file) = fs::File::open(path) {
         io::BufReader::new(file)
@@ -19,11 +19,22 @@ pub fn read_file(file_path: String) -> io::BufReader<fs::File> {
     }
 }
 
-pub fn read_strings_from_file(file_path: String) -> impl Iterator<Item = String> {
+pub fn parse_file<T>(
+    file_path: &str,
+    parse_line: impl Fn(String) -> Result<T, String>,
+) -> impl Iterator<Item = T> {
+    read_file(file_path)
+        .lines()
+        .filter_map(Result::ok)
+        .map(parse_line)
+        .filter_map(Result::ok)
+}
+
+pub fn read_strings_from_file(file_path: &str) -> impl Iterator<Item = String> {
     read_file(file_path).lines().filter_map(Result::ok)
 }
 
-pub fn read_ints_from_file(file_path: String) -> impl Iterator<Item = i32> {
+pub fn read_ints_from_file(file_path: &str) -> impl Iterator<Item = i32> {
     read_file(file_path)
         .lines()
         .filter_map(Result::ok)
@@ -31,7 +42,7 @@ pub fn read_ints_from_file(file_path: String) -> impl Iterator<Item = i32> {
         .filter_map(Result::ok)
 }
 
-pub fn read_string_int_from_file(file_path: String) -> impl Iterator<Item = (String, i32)> {
+pub fn read_string_int_from_file(file_path: &str) -> impl Iterator<Item = (String, i32)> {
     read_file(file_path)
         .lines()
         .filter_map(Result::ok)
@@ -44,7 +55,7 @@ pub fn read_string_int_from_file(file_path: String) -> impl Iterator<Item = (Str
         })
 }
 
-pub fn read_int_list_from_file(file_path: String) -> impl Iterator<Item = Vec<u8>> {
+pub fn read_int_list_from_file(file_path: &str) -> impl Iterator<Item = Vec<u8>> {
     // const RADIX: u32 = 10;
     // c.to_digit(RADIX).unwrap();
 
@@ -225,7 +236,7 @@ mod tests {
 
     #[test]
     fn test_int_list() {
-        let mut records = read_int_list_from_file("data/day3.txt".to_string());
+        let mut records = read_int_list_from_file("data/day3.txt");
 
         match records.next() {
             Some(r) => assert_eq!(vec![1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], r),

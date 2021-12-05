@@ -3,6 +3,7 @@ fn reset_counts(input: Vec<&Vec<u8>>, v0: &mut Vec<u32>, v1: &mut Vec<u32>) {
         v0[i] = 0;
         v1[i] = 0;
     }
+
     input.iter().for_each(|row| {
         for (i, v) in row.iter().enumerate() {
             match v {
@@ -151,11 +152,11 @@ mod tests {
     use super::*;
 
     fn test_data() -> impl Iterator<Item = Vec<u8>> {
-        super::super::util::read_int_list_from_file("data/day3_test.txt".to_string())
+        super::super::util::read_int_list_from_file("data/day3_test.txt")
     }
 
     fn puzzle_input() -> impl Iterator<Item = Vec<u8>> {
-        super::super::util::read_int_list_from_file("data/day3.txt".to_string())
+        super::super::util::read_int_list_from_file("data/day3.txt")
     }
 
     #[test]

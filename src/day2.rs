@@ -51,11 +51,11 @@ mod tests {
     use super::*;
 
     fn test_data() -> impl Iterator<Item = (String, i32)> {
-        super::super::util::read_string_int_from_file("data/day2_test.txt".to_string())
+        super::super::util::read_string_int_from_file("data/day2_test.txt")
     }
 
     fn puzzle_input() -> impl Iterator<Item = (String, i32)> {
-        super::super::util::read_string_int_from_file("data/day2.txt".to_string())
+        super::super::util::read_string_int_from_file("data/day2.txt")
     }
 
     #[test]
