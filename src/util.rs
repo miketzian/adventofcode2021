@@ -8,15 +8,14 @@ use std::path;
 /// use aoc2021::util;
 /// let _ = util::read_file("/not/exist.txt");
 ///```
-pub fn read_file(file_path: &str) -> io::BufReader<fs::File> {
+pub fn read_file(file_path: &str) -> impl Iterator<Item = String> {
     let path = path::Path::new(file_path);
 
-    if let Ok(file) = fs::File::open(path) {
-        io::BufReader::new(file)
-    } else {
-        // at least, within this repo
-        unreachable!();
-    }
+    let file = fs::File::open(path).expect("file should exist");
+
+    io::BufReader::new(file)
+        .lines()
+        .map(|r| r.expect("could not read lines"))
 }
 
 pub fn parse_file<T>(
@@ -24,49 +23,39 @@ pub fn parse_file<T>(
     parse_line: impl Fn(String) -> Result<T, String>,
 ) -> impl Iterator<Item = T> {
     read_file(file_path)
-        .lines()
-        .filter_map(Result::ok)
         .map(parse_line)
-        .filter_map(Result::ok)
+        .map(|r| r.expect("each input line in was not converted successully"))
 }
 
 pub fn read_strings_from_file(file_path: &str) -> impl Iterator<Item = String> {
-    read_file(file_path).lines().filter_map(Result::ok)
+    read_file(file_path)
 }
 
 pub fn read_ints_from_file(file_path: &str) -> impl Iterator<Item = i32> {
     read_file(file_path)
-        .lines()
-        .filter_map(Result::ok)
         .map(|v| v.parse::<i32>())
         .filter_map(Result::ok)
 }
 
 pub fn read_string_int_from_file(file_path: &str) -> impl Iterator<Item = (String, i32)> {
-    read_file(file_path)
-        .lines()
-        .filter_map(Result::ok)
-        .map(|v| {
-            let mut i = v.split(' ');
-            (
-                i.next().unwrap().to_string(),
-                i.next().unwrap().parse::<i32>().unwrap(),
-            )
-        })
+    read_file(file_path).map(|v| {
+        let mut i = v.split(' ');
+        (
+            i.next().unwrap().to_string(),
+            i.next().unwrap().parse::<i32>().unwrap(),
+        )
+    })
 }
 
 pub fn read_int_list_from_file(file_path: &str) -> impl Iterator<Item = Vec<u8>> {
     // const RADIX: u32 = 10;
     // c.to_digit(RADIX).unwrap();
 
-    read_file(file_path)
-        .lines()
-        .filter_map(Result::ok)
-        .map(|s| {
-            s.chars()
-                .map(|c| c.to_string().parse::<u8>().unwrap())
-                .collect()
-        })
+    read_file(file_path).map(|s| {
+        s.chars()
+            .map(|c| c.to_string().parse::<u8>().unwrap())
+            .collect()
+    })
 }
 
 /*
