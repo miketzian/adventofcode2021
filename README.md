@@ -29,3 +29,52 @@ Today was interesting, as I had to make the code worse (ie, skip diagonals) in t
 I also discovered lazy_static, wherin a function can own a value - in this case, an initialized regex it needs - which obviates the need for some other data structure. 
 
 In other languages, you'd declare that at a module level (perhaps) or otherwise be able to reference it, but in Rust that is a no-go - lazy_static uses macros to make it seem more natural, though behind the scenes there's still an extra holding struct as you may expect. 
+
+### Day 6
+
+I hit [this issue](https://github.com/rust-lang/rust/issues/59159) today, wherin a line can attempt to borrow as both mutable and immutable at the same time:
+
+```
+warning: cannot borrow `fish` as mutable because it is also borrowed as immutable
+  --> src/day6.rs:38:21
+   |
+36 | match fish.get(&age) {
+   |       ---- immutable borrow occurs here
+37 |     Some(fish_count) => {
+38 |         fish.insert(age_minus_one, *fish_count);
+   |         ^^^^                       ----------- immutable borrow later used here
+   |         |
+   |         mutable borrow occurs
+```
+
+One solution here is to declare a variable which dereferences the fish_count value, then use that in the call to insert:
+
+```
+   match fish.get(&age) {
+       Some(fish_count) => {
+-          fish.insert(age_minus_one, *fish_count);
++          let minus_one_value = *fish_count;
++          fish.insert(age_minus_one, minus_one_value);
+           fish.remove(&age);
+       }
+       None => {
+            if fish.get(&age_minus_one).is_some() {
+                fish.remove(&age_minus_one);
+            }
+       }
+   }
+```
+
+If I understand correctly, this works because the value is copied out of the old reference before being placed into the new one.
+
+Can you swap the references somehow? [This post](https://stackoverflow.com/questions/65580524/how-to-update-a-key-in-a-hashmap) suggests no but there is a neater solution than using match as I had previously:
+
+```
+if let Some(fish_count) = fish.remove(&age) {
+    fish.insert(age_minus_one, fish_count);
+} else {
+    // remove if it's there.
+    fish.remove(&age_minus_one);
+}
+```
+
