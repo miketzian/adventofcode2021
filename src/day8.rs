@@ -5,20 +5,29 @@ type CalculationInput = (Vec<String>, Vec<String>);
 type DayResult = u64;
 
 pub fn parse_line(input: String) -> ParseResult {
-    let mut iter = input
-        .trim()
-        .split(" | ")
-        .map(|v: &str| v.trim().split(' ').map(|s| s.to_string()).collect());
+    let mut iter = input.trim().split(" | ").map(|v: &str| {
+        v.trim()
+            .split(' ')
+            .map(|s| {
+                let mut sc: Vec<char> = s.chars().collect_vec();
+                sc.sort_unstable();
+                sc.iter().fold(String::new(), |mut a, b| {
+                    a.push(*b);
+                    a
+                })
+            })
+            .collect()
+    });
 
-    let r = (
-        iter.next().expect("signal patterns"),
-        iter.next().expect("output value"),
-    );
+    let mut signal: Vec<String> = iter.next().expect("signal patterns");
+    let output: Vec<String> = iter.next().expect("output value");
 
     if iter.next().is_some() {
         Err("more records in the iterator than we expected".to_string())
     } else {
-        Result::Ok(r)
+        // smallest to largest by length
+        signal.sort_by(|a, b| a.len().partial_cmp(&b.len()).unwrap());
+        Result::Ok((signal, output))
     }
 }
 
@@ -56,97 +65,83 @@ pub fn part1(input: impl Iterator<Item = CalculationInput>) -> DayResult {
     count
 }
 
-pub fn calculate_4hbq(input: CalculationInput) -> DayResult {
-    // I got stuck on this one - a brute force solution from reddit converted to rust
+/// return true if all char in str is in str2
+fn all_in(str: &str, str2: &str) -> bool {
+    str.chars().all(|c| str2.contains(c))
+}
 
-    let all = vec!['a', 'b', 'c', 'd', 'e', 'f', 'g'];
-
-    let mut values = HashMap::new();
-
-    // 1 - 2 - __c__f_
-    values.insert("cf", 1);
-    // 7 - 3 - a_c__f_
-    values.insert("acf", 7);
-    // 4 - 4 - _bcd_f_
-    values.insert("bcdf", 4);
-    // 8 - 7 - abcdefg
-    values.insert("abcdefg", 8);
-
-    // 5 - 5 - ab_d_fg
-    values.insert("abdfg", 5);
-    // 2 - 5 - a_cde_g
-    values.insert("acdeg", 2);
-    // 3 - 5 - a_cd_fg
-    values.insert("acdfg", 3);
-
-    // 0 - 6 - abc_efg
-    values.insert("abcefg", 0);
-    // 6 - 6 - ab_defg
-    values.insert("abdefg", 6);
-    // 9 - 6 - abcd_fg
-    values.insert("abcdfg", 9);
-
-    assert_eq!(10, values.len());
-
+pub fn calculate(input: CalculationInput) -> DayResult {
+    // signal_patterns are sorted in length order ..
     let (signal_patterns, output_values) = input;
 
-    let option = all
-        .iter()
-        .permutations(all.len())
-        .find(|option| {
-            // do all the values work with the wiring in this position ?
-            let mut all_ok = true;
+    let mut entries: HashMap<String, u64> = HashMap::new();
 
-            for value in &signal_patterns {
-                let mut mapped: Vec<char> = value
-                    .chars()
-                    .map(|c| {
-                        let ix = option.iter().position(|o| **o == c).unwrap();
-                        *all.get(ix).unwrap()
-                    })
-                    .collect();
+    // so the 1st will be 1 with len=2
+    let one = &signal_patterns[0];
+    entries.insert(signal_patterns[0].to_string(), 1);
 
-                mapped.sort_unstable();
-                let result = mapped.iter().fold(String::new(), |mut a: String, b| {
-                    a.push(*b);
-                    a
-                });
+    // 2nd will be 7 with len=3
+    // let seven = &signal_patterns[1];
+    entries.insert(signal_patterns[1].to_string(), 7);
 
-                if !values.contains_key(result.as_str()) {
-                    all_ok = false;
-                    break;
-                }
-            }
-            all_ok
-        })
-        .expect("there should be one permutation that works");
+    // 3rd 4 with len=4
+    let four = &signal_patterns[2];
+    entries.insert(signal_patterns[2].to_string(), 4);
 
+    // and last 8 with len=7
+    entries.insert(signal_patterns[9].to_string(), 8);
+
+    // six
+    // nine
+    // zero
+
+    let mut six: &String = &"".to_string();
+
+    // 6,7,8
+    // for i in 6..9 {
+    //     let v = &signal_patterns[i];
+    for v in signal_patterns.iter().take(9).skip(6) {
+        if all_in(four, v) {
+            // this is 9
+            entries.insert(v.to_string(), 9);
+        } else if all_in(one, v) {
+            // this is zero
+            entries.insert(v.to_string(), 0);
+        } else {
+            // six
+            entries.insert(v.to_string(), 6);
+            six = v;
+        }
+    }
+
+    // two
+    // three
+    // five
+
+    // 3,4,5
+    // for i in 3..6 {
+    //     let v = &signal_patterns[i];
+    for v in signal_patterns.iter().take(6).skip(3) {
+        // 3,4,5
+        if all_in(one, v) {
+            // three
+            entries.insert(v.to_string(), 3);
+        } else if all_in(v, six) {
+            // five
+            entries.insert(v.to_string(), 5);
+        } else {
+            entries.insert(v.to_string(), 2);
+        }
+    }
+    // now we know what all the values are, we can map to the result
     output_values
         .iter()
-        .map(|ov| {
-            let mut mapped: Vec<char> = ov
-                .chars()
-                .map(|c| {
-                    let ix = option.iter().position(|o| **o == c).unwrap();
-                    *all.get(ix).unwrap()
-                })
-                .collect();
-
-            mapped.sort_unstable();
-            let result = mapped.iter().fold(String::new(), |mut a: String, b| {
-                a.push(*b);
-                a
-            });
-            values
-                .get(result.as_str())
-                .expect("there should be a mapping")
-        })
-        .fold(0, |a: u64, v| (a * 10) + *v)
+        .map(|v| entries.get(v).unwrap())
+        .fold(0, |acc, vv| (acc * 10) + *vv)
 }
 
 pub fn part2(input: impl Iterator<Item = CalculationInput>) -> DayResult {
-    // need a process of elimination to determine which 4 digits this is.
-    input.map(calculate_4hbq).sum()
+    input.map(calculate).sum()
 }
 
 #[cfg(test)]
@@ -170,7 +165,7 @@ mod tests {
 
         let input = parse_line(line).expect("good line");
 
-        let result = calculate_4hbq(input);
+        let result = calculate(input);
 
         assert_eq!(result, 5353);
     }
