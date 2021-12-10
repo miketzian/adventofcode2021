@@ -18,6 +18,15 @@ pub fn read_file(file_path: &str) -> impl Iterator<Item = String> {
         .map(|r| r.expect("could not read lines"))
 }
 
+pub fn read_data(day: u8, for_test: bool) -> impl Iterator<Item = String> {
+    let file_path = if for_test {
+        format!("data/day{}_test.txt", day)
+    } else {
+        format!("data/day{}.txt", day)
+    };
+    read_file(file_path.as_str())
+}
+
 pub fn parse_file<T>(
     file_path: &str,
     parse_line: impl Fn(String) -> Result<T, String>,
