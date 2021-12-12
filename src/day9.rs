@@ -13,18 +13,13 @@ fn find_neighbors(all: &[Vec<u8>], i: usize, j: usize) -> Vec<(usize, usize, &u8
     };
     let mut bors = Vec::new();
 
-    if i > 0 && j > 0 {
-        if let Some(neighbor) = find(i, j - 1) {
-            bors.push(neighbor);
-        }
+    // usize=0 - 1 will panic
+    if i > 0 {
         if let Some(neighbor) = find(i - 1, j) {
             bors.push(neighbor);
         }
-    } else if i > 0 {
-        if let Some(neighbor) = find(i - 1, j) {
-            bors.push(neighbor);
-        }
-    } else if j > 0 {
+    }
+    if j > 0 {
         if let Some(neighbor) = find(i, j - 1) {
             bors.push(neighbor);
         }
