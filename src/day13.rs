@@ -175,11 +175,16 @@ mod tests {
             vec![false, false, false, false, false, false, true],
         ];
         data = fold_vertical_line(3, data);
-        assert_eq!(data.len(), 1);
+        assert_eq!(data.len(), 2);
         assert_eq!(data[0].len(), 3);
         assert!(data[0][0]);
         assert!(data[0][1]);
         assert!(data[0][2]);
+
+        assert_eq!(data[1].len(), 3);
+        assert!(data[1][0]);
+        assert!(!data[1][1]);
+        assert!(!data[1][2]);
     }
 
     #[test]
