@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
 type CalculationInput = String;
+
 pub struct Point {
     code: String,
     small: bool,
@@ -37,7 +38,7 @@ impl Point {
     }
 
     pub fn is_start(&self) -> bool {
-        self.code == "start".to_string()
+        self.code.eq("start")
     }
 }
 
@@ -68,13 +69,13 @@ impl Tracker {
         // so much clone-ing!
         self.point_map
             .entry(from_s.clone())
-            .or_insert(Point::new(from_s.clone()))
+            .or_insert_with(|| Point::new(from_s.clone()))
             .link(to_s.clone());
 
         self.point_map
             .entry(to_s.clone())
-            .or_insert(Point::new(to_s.clone()))
-            .link(from_s.clone());
+            .or_insert_with(|| Point::new(to_s))
+            .link(from_s);
     }
 
     pub fn start(&self) -> &Point {
@@ -82,7 +83,7 @@ impl Tracker {
     }
 
     pub fn iter_next(&self, code: String) -> impl Iterator<Item = &Point> {
-        let this_point = self.point_map.get(&code.clone()).expect("to be present");
+        let this_point = self.point_map.get(&code).expect("to be present");
 
         this_point.links.iter().cloned().filter_map(|code| {
             let next_point = self.point_map.get(&code).unwrap();
@@ -114,8 +115,7 @@ impl Tracker {
         }) {
             r.append(&mut option);
         }
-
-        return r;
+        r
     }
 
     pub fn traverse_part2(&self, mut path: Vec<String>, next: &Point) -> Vec<Vec<String>> {
@@ -155,7 +155,7 @@ impl Tracker {
     }
 }
 
-pub fn part1(_input: impl Iterator<Item = String>) -> u64 {
+pub fn part1(_input: impl Iterator<Item = CalculationInput>) -> u64 {
     // when we process a point, then make it here
     let tracker = Tracker::new(_input);
 
@@ -172,7 +172,7 @@ pub fn part1(_input: impl Iterator<Item = String>) -> u64 {
     paths
 }
 
-pub fn part2(_input: impl Iterator<Item = String>) -> u64 {
+pub fn part2(_input: impl Iterator<Item = CalculationInput>) -> u64 {
     let tracker = Tracker::new(_input);
 
     let start = tracker.start();
